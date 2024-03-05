@@ -2,22 +2,34 @@
 
 declare(strict_types=1);
 
-namespace Dom\Node;
+namespace Haphp\HtmlParser\Dom\Node;
 
-use Dom\Tag;
+use Haphp\HtmlParser\Dom\Tag;
 use stringEncode\Encode;
-use Exceptions\LogicalException;
-use Exceptions\CircularException;
-use Exceptions\ChildNotFoundException;
+use Haphp\HtmlParser\Exceptions\LogicalException;
+use Haphp\HtmlParser\Exceptions\CircularException;
+use Haphp\HtmlParser\Exceptions\ChildNotFoundException;
+use function key;
+use function end;
+use function count;
+use function reset;
+use function is_int;
+use function is_null;
+use function in_array;
+use function array_keys;
+use function array_search;
+use function array_splice;
+use function array_values;
+use function array_combine;
 
 /**
- * Inner node of the html tree, might have children.
+ * The Inner node of the html tree might have children.
  *
  * @property-read string    $outerhtml
  * @property-read string    $innerhtml
  * @property-read string    $innerText
  * @property-read string    $text
- * @property-read \Dom\Tag       $tag
+ * @property-read Tag       $tag
  * @property-read InnerNode $parent
  */
 abstract class InnerNode extends ArrayNode
@@ -27,7 +39,7 @@ abstract class InnerNode extends ArrayNode
      *
      * @var array
      */
-    protected $children = [];
+    protected array $children = [];
 
     /**
      * Sets the encoding class to this node and propagates it
@@ -56,7 +68,7 @@ abstract class InnerNode extends ArrayNode
     /**
      * Returns the child by id.
      *
-     * @throws \Exceptions\ChildNotFoundException
+     * @throws ChildNotFoundException
      */
     public function getChild(int $id): AbstractNode
     {
@@ -69,6 +81,7 @@ abstract class InnerNode extends ArrayNode
 
     /**
      * Returns a new array of child nodes.
+     * @throws CircularException
      */
     public function getChildren(): array
     {
@@ -80,8 +93,8 @@ abstract class InnerNode extends ArrayNode
                 $nodes[] = $child;
                 $childrenIds[] = $child->id;
                 $child = $this->nextChild($child->id());
-                if (\in_array($child->id, $childrenIds, true)) {
-                    throw new CircularException('Circular sibling referance found. Child with id ' . $child->id() . ' found twice.');
+                if (in_array($child->id, $childrenIds, true)) {
+                    throw new CircularException('Circular sibling reference found. Child with id ' . $child->id() . ' found twice.');
                 }
             } while (true);
         } catch (ChildNotFoundException $e) {
@@ -97,16 +110,15 @@ abstract class InnerNode extends ArrayNode
      */
     public function countChildren(): int
     {
-        return \count($this->children);
+        return count($this->children);
     }
 
     /**
      * Adds a child node to this node and returns the id of the child for this
      * parent.
      *
-     * @throws \Exceptions\ChildNotFoundException
-     * @throws CircularException
-     * @throws \Exceptions\LogicalException
+     * @throws ChildNotFoundException
+     * @throws CircularException|LogicalException
      */
     public function addChild(AbstractNode $child, int $before = -1): bool
     {
@@ -151,7 +163,7 @@ abstract class InnerNode extends ArrayNode
             }
         }
 
-        $keys = \array_keys($this->children);
+        $keys = array_keys($this->children);
 
         $insert = [
             'node' => $child,
@@ -159,18 +171,15 @@ abstract class InnerNode extends ArrayNode
             'prev' => $key,
         ];
 
-        $index = $key ? (int) (\array_search($key, $keys, true) + 1) : 0;
-        \array_splice($keys, $index, 0, (string) $child->id());
+        $index = $key ? (int) (array_search($key, $keys, true) + 1) : 0;
+        array_splice($keys, $index, 0, (string) $child->id());
 
-        $children = \array_values($this->children);
-        \array_splice($children, $index, 0, [$insert]);
+        $children = array_values($this->children);
+        array_splice($children, $index, 0, [$insert]);
 
         // add the child
-        $combination = \array_combine($keys, $children);
-        if ($combination === false) {
-            // The number of elements for each array isn't equal or if the arrays are empty.
-            throw new LogicalException('array combine failed during add child method call.');
-        }
+        $combination = array_combine($keys, $children);
+
         $this->children = $combination;
 
         // tell child I am the new parent
@@ -185,8 +194,8 @@ abstract class InnerNode extends ArrayNode
     /**
      * Insert element before child with provided id.
      *
-     * @throws \Exceptions\ChildNotFoundException
-     * @throws CircularException
+     * @throws ChildNotFoundException
+     * @throws CircularException|LogicalException
      */
     public function insertBefore(AbstractNode $child, int $id): bool
     {
@@ -196,8 +205,8 @@ abstract class InnerNode extends ArrayNode
     /**
      * Insert element before after with provided id.
      *
-     * @throws \Exceptions\ChildNotFoundException
-     * @throws CircularException
+     * @throws ChildNotFoundException
+     * @throws CircularException|LogicalException
      */
     public function insertAfter(AbstractNode $child, int $id): bool
     {
@@ -205,7 +214,7 @@ abstract class InnerNode extends ArrayNode
             return false;
         }
 
-        if (isset($this->children[$id]['next']) && \is_int($this->children[$id]['next'])) {
+        if (isset($this->children[$id]['next']) && is_int($this->children[$id]['next'])) {
             return $this->addChild($child, (int) $this->children[$id]['next']);
         }
 
@@ -227,10 +236,10 @@ abstract class InnerNode extends ArrayNode
         // handle moving next and previous assignments.
         $next = $this->children[$id]['next'];
         $prev = $this->children[$id]['prev'];
-        if (!\is_null($next)) {
+        if (!is_null($next)) {
             $this->children[$next]['prev'] = $prev;
         }
-        if (!\is_null($prev)) {
+        if (!is_null($prev)) {
             $this->children[$prev]['next'] = $next;
         }
 
@@ -244,13 +253,13 @@ abstract class InnerNode extends ArrayNode
     }
 
     /**
-     * Check if has next Child.
+     * Check if it has the next Child.
      *
+     * @param  int  $id
      * @return mixed
-     * @throws \Exceptions\ChildNotFoundException
-     *
+     * @throws ChildNotFoundException
      */
-    public function hasNextChild(int $id)
+    public function hasNextChild(int $id): mixed
     {
         $child = $this->getChild($id);
 
@@ -268,7 +277,7 @@ abstract class InnerNode extends ArrayNode
     {
         $child = $this->getChild($id);
         $next = $this->children[$child->id()]['next'];
-        if (\is_null($next) || !\is_int($next)) {
+        if (!is_int($next)) {
             throw new ChildNotFoundException("Child '$id' next sibling not found in this node.");
         }
 
@@ -286,7 +295,7 @@ abstract class InnerNode extends ArrayNode
     {
         $child = $this->getchild($id);
         $next = $this->children[$child->id()]['prev'];
-        if (\is_null($next) || !\is_int($next)) {
+        if (!is_int($next)) {
             throw new ChildNotFoundException("Child '$id' previous not found in this node.");
         }
 
@@ -299,10 +308,8 @@ abstract class InnerNode extends ArrayNode
      */
     public function isChild(int $id): bool
     {
-        foreach (\array_keys($this->children) as $childId) {
-            if ($id == $childId) {
-                return true;
-            }
+        if (in_array($id, array_keys($this->children))) {
+            return true;
         }
 
         return false;
@@ -312,7 +319,6 @@ abstract class InnerNode extends ArrayNode
      * Removes the child with id $childId and replace it with the new child
      * $newChild.
      *
-     * @throws \Exceptions\LogicalException
      */
     public function replaceChild(int $childId, AbstractNode $newChild): void
     {
@@ -321,14 +327,10 @@ abstract class InnerNode extends ArrayNode
         $newChild->prev = (int) $oldChild['prev'];
         $newChild->next = (int) $oldChild['next'];
 
-        $keys = \array_keys($this->children);
-        $index = \array_search($childId, $keys, true);
+        $keys = array_keys($this->children);
+        $index = array_search($childId, $keys, true);
         $keys[$index] = $newChild->id();
-        $combination = \array_combine($keys, $this->children);
-        if ($combination === false) {
-            // The number of elements for each array isn't equal or if the arrays are empty.
-            throw new LogicalException('array combine failed during replace child method call.');
-        }
+        $combination = array_combine($keys, $this->children);
         $this->children = $combination;
         $this->children[$newChild->id()] = [
             'prev' => $oldChild['prev'],
@@ -362,13 +364,13 @@ abstract class InnerNode extends ArrayNode
      */
     public function firstChild(): AbstractNode
     {
-        if (\count($this->children) == 0) {
+        if (count($this->children) == 0) {
             // no children
             throw new ChildNotFoundException('No children found in node.');
         }
 
-        \reset($this->children);
-        $key = (int) \key($this->children);
+        reset($this->children);
+        $key = (int) key($this->children);
 
         return $this->getChild($key);
     }
@@ -376,21 +378,21 @@ abstract class InnerNode extends ArrayNode
     /**
      * Attempts to get the last child.
      *
-     * @throws ChildNotFoundException
+     * @throws ChildNotFoundException|LogicalException
      *
      * @uses $this->getChild()
      */
     public function lastChild(): AbstractNode
     {
-        if (\count($this->children) == 0) {
+        if (count($this->children) == 0) {
             // no children
             throw new ChildNotFoundException('No children found in node.');
         }
 
-        \end($this->children);
-        $key = \key($this->children);
+        end($this->children);
+        $key = key($this->children);
 
-        if (!\is_int($key)) {
+        if (!is_int($key)) {
             throw new LogicalException('Children array contain child with a key that is not an int.');
         }
 
@@ -424,8 +426,7 @@ abstract class InnerNode extends ArrayNode
     /**
      * Sets the parent node.
      *
-     * @throws \Exceptions\ChildNotFoundException
-     * @throws \Exceptions\CircularException
+     * @throws CircularException
      */
     public function setParent(InnerNode $parent): AbstractNode
     {

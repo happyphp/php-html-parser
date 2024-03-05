@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Exceptions;
+namespace Haphp\HtmlParser\Exceptions;
 
 use Exception;
 

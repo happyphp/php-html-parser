@@ -2,13 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Exceptions;
+namespace Haphp\HtmlParser\Exceptions;
 
 use Exception;
 
-/**
- * Class NotLoadedException.
- */
 final class NotLoadedException extends Exception
 {
 }

@@ -2,32 +2,39 @@
 
 declare(strict_types=1);
 
-namespace Dom;
+namespace Haphp\HtmlParser\Dom;
 
-use Content;
-use Options;
-use DTO\TagDTO;
-use Enum\StringToken;
-use Dom\Node\HtmlNode;
-use Dom\Node\TextNode;
+use Haphp\HtmlParser\Content;
+use Haphp\HtmlParser\Options;
+use Haphp\HtmlParser\DTO\TagDTO;
+use Haphp\HtmlParser\Enum\StringToken;
+use Haphp\HtmlParser\Dom\Node\HtmlNode;
+use Haphp\HtmlParser\Dom\Node\TextNode;
 use stringEncode\Encode;
-use Dom\Node\AbstractNode;
-use Exceptions\StrictException;
-use Exceptions\LogicalException;
-use Exceptions\CircularException;
-use Exceptions\ChildNotFoundException;
-use Exceptions\ContentLengthException;
+use Haphp\HtmlParser\Dom\Node\AbstractNode;
+use Haphp\HtmlParser\Exceptions\StrictException;
+use Haphp\HtmlParser\Exceptions\LogicalException;
+use Haphp\HtmlParser\Exceptions\CircularException;
+use Haphp\HtmlParser\Contracts\Dom\ParserInterface;
+use Haphp\HtmlParser\Exceptions\ChildNotFoundException;
+use Haphp\HtmlParser\Exceptions\ContentLengthException;
+use function trim;
+use function strlen;
+use function is_null;
+use function in_array;
+use function preg_match;
+use function strtolower;
 
-class Parser implements \Contracts\Dom\ParserInterface
+class Parser implements ParserInterface
 {
     /**
      * Attempts to parse the html in content.
      *
      * @throws ChildNotFoundException
-     * @throws \Exceptions\CircularException
-     * @throws \Exceptions\ContentLengthException
+     * @throws CircularException
+     * @throws ContentLengthException
      * @throws LogicalException
-     * @throws \Exceptions\StrictException
+     * @throws StrictException
      */
     public function parse(Options $options, Content $content, int $size): AbstractNode
     {
@@ -74,16 +81,16 @@ class Parser implements \Contracts\Dom\ParserInterface
                     continue;
                 }
 
-                /** @var \Dom\Node\AbstractNode $node */
+                /** @var AbstractNode $node */
                 $node = $tagDTO->getNode();
                 $activeNode->addChild($node);
 
-                // check if node is self closing
+                // check if the node is self-closing
                 if (!$node->getTag()->isSelfClosing()) {
                     $activeNode = $node;
                 }
             } elseif ($options->isWhitespaceTextNode() ||
-                \trim($str) != ''
+                trim($str) != ''
             ) {
                 // we found text we care about
                 $textNode = new TextNode($str, $options->isRemoveDoubleSpace());
@@ -98,7 +105,7 @@ class Parser implements \Contracts\Dom\ParserInterface
     /**
      * Attempts to detect the charset that the html was sent in.
      *
-     * @throws \Exceptions\ChildNotFoundException
+     * @throws ChildNotFoundException
      */
     public function detectCharset(Options $options, string $defaultCharset, AbstractNode $root): bool
     {
@@ -116,11 +123,11 @@ class Parser implements \Contracts\Dom\ParserInterface
             return false;
         }
 
-        /** @var \Dom\Node\AbstractNode $meta */
+        /** @var AbstractNode $meta */
         $meta = $root->find('meta[http-equiv=Content-Type]', 0);
         if ($meta == null) {
             if (!$this->detectHTML5Charset($encode, $root)) {
-                // could not find meta tag
+                // could not find meta-tag
                 $root->propagateEncoding($encode);
 
                 return false;
@@ -129,15 +136,15 @@ class Parser implements \Contracts\Dom\ParserInterface
             return true;
         }
         $content = $meta->getAttribute('content');
-        if (\is_null($content)) {
+        if (is_null($content)) {
             // could not find content
             $root->propagateEncoding($encode);
 
             return false;
         }
         $matches = [];
-        if (\preg_match('/charset=([^;]+)/', $content, $matches)) {
-            $encode->from(\trim($matches[1]));
+        if (preg_match('/charset=([^;]+)/', $content, $matches)) {
+            $encode->from(trim($matches[1]));
             $root->propagateEncoding($encode);
 
             return true;
@@ -152,10 +159,10 @@ class Parser implements \Contracts\Dom\ParserInterface
     /**
      * Attempt to parse a tag out of the content.
      *
-     * @throws \Exceptions\StrictException
-     * @throws \Exceptions\ContentLengthException
+     * @throws StrictException
+     * @throws ContentLengthException
      * @throws LogicalException
-     * @throws \Exceptions\StrictException
+     * @throws StrictException
      */
     private function parseTag(Options $options, Content $content, int $size): TagDTO
     {
@@ -191,8 +198,8 @@ class Parser implements \Contracts\Dom\ParserInterface
                 ->setClosing('-->')
                 ->selfClosing();
         } else {
-            $tag = \strtolower($content->copyByToken(StringToken::SLASH(), true));
-            if (\trim($tag) == '') {
+            $tag = strtolower($content->copyByToken(StringToken::SLASH(), true));
+            if (trim($tag) == '') {
                 // no tag found, invalid < found
                 return TagDTO::makeFromPrimitives();
             }
@@ -206,18 +213,18 @@ class Parser implements \Contracts\Dom\ParserInterface
             // self closing tag
             $node->getTag()->selfClosing();
             $content->fastForward(1);
-        } elseif (\in_array($node->getTag()->name(), $options->getSelfClosing(), true)) {
-            // Should be a self closing tag, check if we are strict
+        } elseif (in_array($node->getTag()->name(), $options->getSelfClosing(), true)) {
+            // Should be a self-closing tag, check if we are strict
             if ($options->isStrict()) {
                 $character = $content->getPosition();
                 throw new StrictException("Tag '" . $node->getTag()->name() . "' is not self closing! (character #$character)");
             }
 
-            // We force self closing on this tag.
+            // We force self-closing on this tag.
             $node->getTag()->selfClosing();
 
             // Should this tag use a trailing slash?
-            if (\in_array($node->getTag()->name(), $options->getNoSlash(), true)) {
+            if (in_array($node->getTag()->name(), $options->getNoSlash(), true)) {
                 $node->getTag()->noTrailingSlash();
             }
         }
@@ -234,47 +241,51 @@ class Parser implements \Contracts\Dom\ParserInterface
      */
     private function detectHTML5Charset(Encode $encode, AbstractNode $root): bool
     {
-        /** @var \Dom\Node\AbstractNode|null $meta */
+        /** @var AbstractNode|null $meta */
         $meta = $root->find('meta[charset]', 0);
         if ($meta == null) {
             return false;
         }
 
-        $encode->from(\trim($meta->getAttribute('charset')));
+        $encode->from(trim($meta->getAttribute('charset')));
         $root->propagateEncoding($encode);
 
         return true;
     }
 
     /**
-     * @throws \Exceptions\ContentLengthException
      * @throws LogicalException
+     * @throws ContentLengthException
      */
     private function makeEndTag(Content $content, Options $options): TagDTO
     {
         $tag = $content->fastForward(1)
             ->copyByToken(StringToken::SLASH(), true);
-        // move to end of tag
+        // move to the end of tag
         $content->copyUntil('>');
         $content->fastForward(1);
 
         // check if this closing tag counts
-        $tag = \strtolower($tag);
-        if (\in_array($tag, $options->getSelfClosing(), true)) {
+        $tag = strtolower($tag);
+        if (in_array($tag, $options->getSelfClosing(), true)) {
             return TagDTO::makeFromPrimitives(true);
         }
 
-        return TagDTO::makeFromPrimitives(true, true, null, \strtolower($tag));
+        return TagDTO::makeFromPrimitives(true, true, null, strtolower($tag));
     }
 
     /**
-     * @param string|Tag $tag
+     * @param  Content  $content
+     * @param  int  $size
+     * @param  HtmlNode  $node
+     * @param  Options  $options
+     * @param  string|Tag  $tag
      *
      * @throws ContentLengthException
      * @throws LogicalException
-     * @throws \Exceptions\StrictException
+     * @throws StrictException
      */
-    private function setUpAttributes(Content $content, int $size, HtmlNode $node, Options $options, $tag): void
+    private function setUpAttributes(Content $content, int $size, HtmlNode $node, Options $options, string|Tag $tag): void
     {
         while (
             $content->char() != '>' &&
@@ -296,12 +307,11 @@ class Parser implements \Contracts\Dom\ParserInterface
                 break;
             }
 
+            $content->skipByToken(StringToken::BLANK());
             if (empty($name)) {
-                $content->skipByToken(StringToken::BLANK());
                 continue;
             }
 
-            $content->skipByToken(StringToken::BLANK());
             if ($content->char() == '=') {
                 $content->fastForward(1)
                     ->skipByToken(StringToken::BLANK());
@@ -312,7 +322,7 @@ class Parser implements \Contracts\Dom\ParserInterface
                         do {
                             $moreString = $content->copyUntilUnless('"', '=>');
                             $string .= $moreString;
-                        } while (\strlen($moreString) > 0 && $content->getPosition() < $size);
+                        } while (strlen($moreString) > 0 && $content->getPosition() < $size);
                         $content->fastForward(1);
                         $node->getTag()->setAttribute($name, $string);
                         break;
@@ -322,7 +332,7 @@ class Parser implements \Contracts\Dom\ParserInterface
                         do {
                             $moreString = $content->copyUntilUnless("'", '=>');
                             $string .= $moreString;
-                        } while (\strlen($moreString) > 0 && $content->getPosition() < $size);
+                        } while (strlen($moreString) > 0 && $content->getPosition() < $size);
                         $content->fastForward(1);
                         $node->getTag()->setAttribute($name, $string, false);
                         break;

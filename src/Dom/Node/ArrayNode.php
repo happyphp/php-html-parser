@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Dom\Node;
+namespace Haphp\HtmlParser\Dom\Node;
 
-use Dom\Tag;
+use Haphp\HtmlParser\Dom\Tag;
 use Countable;
 use ArrayIterator;
 use IteratorAggregate;
+use function count;
 
 /**
  * Dom node object which will allow users to use it as
@@ -35,11 +36,11 @@ abstract class ArrayNode extends AbstractNode implements IteratorAggregate, Coun
      */
     public function count(): int
     {
-        return \count($this->getIteratorArray());
+        return count($this->getIteratorArray());
     }
 
     /**
-     * Returns the array to be used the the iterator.
+     * Returns the array to be used the iterator.
      */
     abstract protected function getIteratorArray(): array;
 }

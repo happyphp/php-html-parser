@@ -2,31 +2,31 @@
 
 declare(strict_types=1);
 
-namespace DTO;
+namespace Haphp\HtmlParser\DTO;
 
-use Dom\Node\HtmlNode;
+use Haphp\HtmlParser\Dom\Node\HtmlNode;
 
 final class TagDTO
 {
     /**
      * @var bool
      */
-    private $status;
+    private mixed $status;
 
     /**
      * @var bool
      */
-    private $closing;
+    private mixed $closing;
 
     /**
      * @var ?HtmlNode
      */
-    private $node;
+    private mixed $node;
 
     /**
      * @var ?string
      */
-    private $tag;
+    private mixed $tag;
 
     private function __construct(array $values = [])
     {
@@ -57,7 +57,7 @@ final class TagDTO
     }
 
     /**
-     * @return mixed
+     * @return HtmlNode|null
      */
     public function getNode(): ?HtmlNode
     {
@@ -65,7 +65,7 @@ final class TagDTO
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
     public function getTag(): ?string
     {

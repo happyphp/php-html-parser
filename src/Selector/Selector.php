@@ -2,16 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Selector;
+namespace Haphp\HtmlParser\Selector;
 
-use Dom\Node\Collection;
-use Dom\Node\AbstractNode;
-use Discovery\SeekerDiscovery;
-use Discovery\SelectorParserDiscovery;
-use Exceptions\ChildNotFoundException;
-use Contracts\Selector\SeekerInterface;
-use Contracts\Selector\SelectorInterface;
-use DTO\Selector\ParsedSelectorCollectionDTO;
+use Haphp\HtmlParser\Dom\Node\Collection;
+use Haphp\HtmlParser\DTO\Selector\RuleDTO;
+use Haphp\HtmlParser\Dom\Node\AbstractNode;
+use Haphp\HtmlParser\Discovery\SeekerDiscovery;
+use Haphp\HtmlParser\Discovery\SelectorParserDiscovery;
+use Haphp\HtmlParser\Exceptions\ChildNotFoundException;
+use Haphp\HtmlParser\Contracts\Selector\SeekerInterface;
+use Haphp\HtmlParser\Contracts\Selector\ParserInterface;
+use Haphp\HtmlParser\Contracts\Selector\SelectorInterface;
+use Haphp\HtmlParser\DTO\Selector\ParsedSelectorCollectionDTO;
+use function count;
 
 /**
  * Class Selector.
@@ -19,19 +22,19 @@ use DTO\Selector\ParsedSelectorCollectionDTO;
 class Selector implements SelectorInterface
 {
     /**
-     * @var \DTO\Selector\ParsedSelectorCollectionDTO
+     * @var ParsedSelectorCollectionDTO
      */
-    private $ParsedSelectorCollectionDTO;
+    private ParsedSelectorCollectionDTO $ParsedSelectorCollectionDTO;
 
     /**
      * @var SeekerInterface
      */
-    private $seeker;
+    private SeekerInterface $seeker;
 
     /**
      * Constructs with the selector string.
      */
-    public function __construct(string $selector, ?\Contracts\Selector\ParserInterface $parser = null, ?SeekerInterface $seeker = null)
+    public function __construct(string $selector, ?ParserInterface $parser = null, ?SeekerInterface $seeker = null)
     {
         if ($parser == null) {
             $parser = SelectorParserDiscovery::find();
@@ -56,14 +59,14 @@ class Selector implements SelectorInterface
      * Attempts to find the selectors starting from the given
      * node object.
      *
-     * @throws \Exceptions\ChildNotFoundException
+     * @throws ChildNotFoundException
      */
     public function find(AbstractNode $node): Collection
     {
         $results = new Collection();
         foreach ($this->ParsedSelectorCollectionDTO->getParsedSelectorDTO() as $selector) {
             $nodes = [$node];
-            if (\count($selector->getRules()) == 0) {
+            if (count($selector->getRules()) == 0) {
                 continue;
             }
 
@@ -91,7 +94,7 @@ class Selector implements SelectorInterface
      * Attempts to figure out what the alteration will be for
      * the next element.
      */
-    private function alterNext(\DTO\Selector\RuleDTO $rule): array
+    private function alterNext(RuleDTO $rule): array
     {
         $options = [];
         if ($rule->getTag() == '>') {

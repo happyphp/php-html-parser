@@ -1,8 +1,9 @@
 <?php
 
-namespace Contracts\Selector;
+namespace Haphp\HtmlParser\Contracts\Selector;
 
-use Exceptions\ChildNotFoundException;
+use Haphp\HtmlParser\DTO\Selector\RuleDTO;
+use Haphp\HtmlParser\Exceptions\ChildNotFoundException;
 
 interface SeekerInterface
 {
@@ -10,7 +11,7 @@ interface SeekerInterface
      * Attempts to find all children that match the rule
      * given.
      *
-     * @throws \Exceptions\ChildNotFoundException
+     * @throws ChildNotFoundException
      */
-    public function seek(array $nodes, \DTO\Selector\RuleDTO $rule, array $options): array;
+    public function seek(array $nodes, RuleDTO $rule, array $options): array;
 }

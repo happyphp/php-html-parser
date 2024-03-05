@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace DTO\Selector;
+namespace Haphp\HtmlParser\DTO\Selector;
 
 final class ParsedSelectorCollectionDTO
 {
     /**
      * @var ParsedSelectorDTO[]
      */
-    private $parsedSelectorDTO = [];
+    private array $parsedSelectorDTO = [];
 
     /**
      * @param ParsedSelectorDTO[] $parsedSelectorDTOs

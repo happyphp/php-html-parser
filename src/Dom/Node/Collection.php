@@ -2,13 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Dom\Node;
+namespace Haphp\HtmlParser\Dom\Node;
 
 use Countable;
 use ArrayAccess;
 use ArrayIterator;
 use IteratorAggregate;
-use Exceptions\EmptyCollectionException;
+use ReturnTypeWillChange;
+use Haphp\HtmlParser\Exceptions\EmptyCollectionException;
+use function reset;
+use function count;
+use function is_null;
+use function call_user_func_array;
 
 /**
  * Class Collection.
@@ -20,21 +25,21 @@ class Collection implements IteratorAggregate, ArrayAccess, Countable
      *
      * @var array
      */
-    protected $collection = [];
+    protected array $collection = [];
 
     /**
      * Attempts to call the method on the first node in
      * the collection.
      *
      * @return mixed
-     * @throws \Exceptions\EmptyCollectionException
+     * @throws EmptyCollectionException
      *
      */
     public function __call(string $method, array $arguments)
     {
-        $node = \reset($this->collection);
+        $node = reset($this->collection);
         if ($node instanceof AbstractNode) {
-            return \call_user_func_array([$node, $method], $arguments);
+            return call_user_func_array([$node, $method], $arguments);
         }
         throw new EmptyCollectionException('The collection does not contain any Nodes.');
     }
@@ -46,12 +51,12 @@ class Collection implements IteratorAggregate, ArrayAccess, Countable
      * @param mixed $key
      *
      * @return mixed
-     *@throws \Exceptions\EmptyCollectionException
+     * @throws EmptyCollectionException
      *
      */
-    public function __get($key)
+    public function __get(mixed $key)
     {
-        $node = \reset($this->collection);
+        $node = reset($this->collection);
         if ($node instanceof AbstractNode) {
             return $node->$key;
         }
@@ -64,7 +69,7 @@ class Collection implements IteratorAggregate, ArrayAccess, Countable
      */
     public function __toString(): string
     {
-        $node = \reset($this->collection);
+        $node = reset($this->collection);
         if ($node instanceof AbstractNode) {
             return (string) $node;
         }
@@ -77,7 +82,7 @@ class Collection implements IteratorAggregate, ArrayAccess, Countable
      */
     public function count(): int
     {
-        return \count($this->collection);
+        return count($this->collection);
     }
 
     /**
@@ -94,9 +99,9 @@ class Collection implements IteratorAggregate, ArrayAccess, Countable
      * @param mixed $offset
      * @param mixed $value
      */
-    public function offsetSet($offset, $value): void
+    public function offsetSet(mixed $offset, mixed $value): void
     {
-        if (\is_null($offset)) {
+        if (is_null($offset)) {
             $this->collection[] = $value;
         } else {
             $this->collection[$offset] = $value;
@@ -106,9 +111,10 @@ class Collection implements IteratorAggregate, ArrayAccess, Countable
     /**
      * Checks if an offset exists.
      *
-     * @param mixed $offset
+     * @param  mixed  $offset
+     * @return bool
      */
-    public function offsetExists($offset): bool
+    public function offsetExists(mixed $offset): bool
     {
         return isset($this->collection[$offset]);
     }
@@ -118,7 +124,7 @@ class Collection implements IteratorAggregate, ArrayAccess, Countable
      *
      * @param mixed $offset
      */
-    public function offsetUnset($offset): void
+    public function offsetUnset(mixed $offset): void
     {
         unset($this->collection[$offset]);
     }
@@ -130,7 +136,8 @@ class Collection implements IteratorAggregate, ArrayAccess, Countable
      *
      * @return mixed
      */
-    public function offsetGet($offset)
+    #[ReturnTypeWillChange]
+    public function offsetGet(mixed $offset): mixed
     {
         return $this->collection[$offset] ?? null;
     }
@@ -147,7 +154,7 @@ class Collection implements IteratorAggregate, ArrayAccess, Countable
      * Similar to jQuery "each" method. Calls the callback with each
      * Node in this collection.
      */
-    public function each(callable $callback)
+    public function each(callable $callback): void
     {
         foreach ($this->collection as $key => $value) {
             $callback($value, $key);

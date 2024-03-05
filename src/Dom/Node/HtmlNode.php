@@ -2,11 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Dom\Node;
+namespace Haphp\HtmlParser\Dom\Node;
 
-use Dom\Tag;
-use Exceptions\ChildNotFoundException;
-use Exceptions\UnknownChildTypeException;
+use stringEncode\Exception;
+use Haphp\HtmlParser\Dom\Tag;
+use Haphp\HtmlParser\Exceptions\CircularException;
+use Haphp\HtmlParser\Exceptions\ChildNotFoundException;
+use Haphp\HtmlParser\Exceptions\UnknownChildTypeException;
+use function is_null;
+use function get_class;
+use function strip_tags;
 
 /**
  * Class HtmlNode.
@@ -15,7 +20,7 @@ use Exceptions\UnknownChildTypeException;
  * @property-read string    $innerhtml
  * @property-read string    $innerText
  * @property-read string    $text
- * @property-read \Dom\Tag       $tag
+ * @property-read Tag       $tag
  * @property-read InnerNode $parent
  */
 class HtmlNode extends InnerNode
@@ -25,14 +30,14 @@ class HtmlNode extends InnerNode
      *
      * @var ?string
      */
-    protected $innerHtml;
+    protected ?string $innerHtml;
 
     /**
      * Remembers what the outerHtml was if it was scanned previously.
      *
      * @var ?string
      */
-    protected $outerHtml;
+    protected ?string $outerHtml;
 
     /**
      * Remembers what the innerText was if it was scanned previously.
@@ -54,14 +59,16 @@ class HtmlNode extends InnerNode
      *
      * @var ?string
      */
-    protected $textWithChildren;
+    protected ?string $textWithChildren;
+
+    protected Tag $tag;
 
     /**
      * Sets up the tag of this node.
      *
-     * @param string|\Dom\Tag $tag
+     * @param  string|Tag  $tag
      */
-    public function __construct($tag)
+    public function __construct(string|Tag $tag)
     {
         if (!$tag instanceof Tag) {
             $tag = new Tag($tag);
@@ -71,9 +78,9 @@ class HtmlNode extends InnerNode
     }
 
     /**
-     * @param bool $htmlSpecialCharsDecode
+     * @param  bool  $htmlSpecialCharsDecode
      */
-    public function setHtmlSpecialCharsDecode($htmlSpecialCharsDecode = false): void
+    public function setHtmlSpecialCharsDecode(bool $htmlSpecialCharsDecode = false): void
     {
         parent::setHtmlSpecialCharsDecode($htmlSpecialCharsDecode);
         $this->tag->setHtmlSpecialCharsDecode($htmlSpecialCharsDecode);
@@ -83,7 +90,8 @@ class HtmlNode extends InnerNode
      * Gets the inner html of this node.
      *
      * @throws ChildNotFoundException
-     * @throws \Exceptions\UnknownChildTypeException
+     * @throws UnknownChildTypeException
+     * @throws Exception
      */
     public function innerHtml(): string
     {
@@ -107,7 +115,7 @@ class HtmlNode extends InnerNode
             } elseif ($child instanceof HtmlNode) {
                 $string .= $child->outerHtml();
             } else {
-                throw new UnknownChildTypeException('Unknown child type "' . \get_class($child) . '" found in node');
+                throw new UnknownChildTypeException('Unknown child type "' . get_class($child) . '" found in node');
             }
 
             try {
@@ -129,23 +137,25 @@ class HtmlNode extends InnerNode
      * Gets the inner text of this node.
      *
      * @throws ChildNotFoundException
-     * @throws \Exceptions\UnknownChildTypeException
+     * @throws UnknownChildTypeException
+     * @throws Exception
      */
     public function innerText(): string
     {
-        if (\is_null($this->innerText)) {
-            $this->innerText = \strip_tags($this->innerHtml());
+        if (is_null($this->innerText)) {
+            $this->innerText = strip_tags($this->innerHtml());
         }
 
         return $this->innerText;
     }
 
     /**
-     * Gets the html of this node, including it's own
+     * Gets the html of this node, including its own
      * tag.
      *
-     * @throws \Exceptions\ChildNotFoundException
-     * @throws \Exceptions\UnknownChildTypeException
+     * @throws ChildNotFoundException
+     * @throws UnknownChildTypeException
+     * @throws Exception
      */
     public function outerHtml(): string
     {
@@ -236,6 +246,7 @@ class HtmlNode extends InnerNode
 
     /**
      * Returns all children of this html node.
+     * @throws CircularException
      */
     protected function getIteratorArray(): array
     {

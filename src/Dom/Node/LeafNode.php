@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Dom\Node;
+namespace Haphp\HtmlParser\Dom\Node;
 
-use Dom\Tag;
+use Haphp\HtmlParser\Dom\Tag;
 
 /**
  * Class LeafNode.

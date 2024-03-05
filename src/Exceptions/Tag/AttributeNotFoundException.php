@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Exceptions\Tag;
+namespace Haphp\HtmlParser\Exceptions\Tag;
 
 /**
  * Class AttributeNotFoundException.

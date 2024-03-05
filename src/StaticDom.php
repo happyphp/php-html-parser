@@ -2,21 +2,29 @@
 
 declare(strict_types=1);
 
+namespace Haphp\HtmlParser;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
-use Exceptions\CircularException;
-use Exceptions\NotLoadedException;
+use Haphp\HtmlParser\Exceptions\StrictException;
+use Haphp\HtmlParser\Exceptions\LogicalException;
+use Haphp\HtmlParser\Exceptions\CircularException;
+use Haphp\HtmlParser\Exceptions\NotLoadedException;
 use Psr\Http\Client\ClientInterface;
-use Exceptions\ChildNotFoundException;
+use Haphp\HtmlParser\Exceptions\ChildNotFoundException;
 use Psr\Http\Message\RequestInterface;
+use Haphp\HtmlParser\Exceptions\ContentLengthException;
+use function is_null;
+use function class_alias;
+use function class_exists;
+use function call_user_func_array;
 
 /**
  * Class StaticDom.
  */
 final class StaticDom
 {
-    private static $dom = null;
+    private static ?Dom $dom = null;
 
     /**
      * Attempts to call the given method on the most recent created dom
@@ -29,7 +37,7 @@ final class StaticDom
     public static function __callStatic(string $method, array $arguments)
     {
         if (self::$dom instanceof Dom) {
-            return \call_user_func_array([self::$dom, $method], $arguments);
+            return call_user_func_array([self::$dom, $method], $arguments);
         }
         throw new NotLoadedException('The dom is not loaded. Can not call a dom method.');
     }
@@ -38,14 +46,16 @@ final class StaticDom
      * Call this to mount the static facade. The facade allows you to use
      * this object as a $className.
      *
-     * @param ?Dom $dom
+     * @param  string  $className
+     * @param ?Dom  $dom
+     * @return bool
      */
     public static function mount(string $className = 'Dom', ?Dom $dom = null): bool
     {
-        if (\class_exists($className)) {
+        if (class_exists($className)) {
             return false;
         }
-        \class_alias(__CLASS__, $className);
+        class_alias(__CLASS__, $className);
         if ($dom instanceof Dom) {
             self::$dom = $dom;
         }
@@ -59,8 +69,8 @@ final class StaticDom
      *
      * @throws ChildNotFoundException
      * @throws CircularException
-     * @throws \Exceptions\StrictException
-     * @throws \Exceptions\LogicalException
+     * @throws StrictException
+     * @throws LogicalException|Exceptions\ContentLengthException
      */
     public static function loadFromFile(string $file, ?Options $options = null): Dom
     {
@@ -73,27 +83,29 @@ final class StaticDom
     /**
      * Creates a new dom object and calls loadFromUrl() on the
      * new object.
-     *
-     * @throws \Exceptions\ChildNotFoundException
-     * @throws CircularException
-     * @throws \Exceptions\StrictException
-     * @throws \Psr\Http\Client\ClientExceptionInterface
      */
     public static function loadFromUrl(string $url, ?Options $options = null, ClientInterface $client = null, RequestInterface $request = null): Dom
     {
         $dom = new Dom();
         self::$dom = $dom;
 
-        if (\is_null($client)) {
+        if (is_null($client)) {
             $client = new Client();
         }
-        if (\is_null($request)) {
+        if (is_null($request)) {
             $request = new Request('GET', $url);
         }
 
         return $dom->loadFromUrl($url, $options, $client, $request);
     }
 
+    /**
+     * @throws LogicalException
+     * @throws CircularException
+     * @throws StrictException
+     * @throws ChildNotFoundException
+     * @throws ContentLengthException
+     */
     public static function loadStr(string $str, ?Options $options = null): Dom
     {
         $dom = new Dom();

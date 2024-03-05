@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Contracts\Selector;
+namespace Haphp\HtmlParser\Contracts\Selector;
 
-use Dom\Node\Collection;
-use Dom\Node\AbstractNode;
-use Exceptions\ChildNotFoundException;
-use DTO\Selector\ParsedSelectorCollectionDTO;
+use Haphp\HtmlParser\Dom\Node\Collection;
+use Haphp\HtmlParser\Dom\Node\AbstractNode;
+use Haphp\HtmlParser\Exceptions\ChildNotFoundException;
+use Haphp\HtmlParser\DTO\Selector\ParsedSelectorCollectionDTO;
 
 interface SelectorInterface
 {
@@ -25,7 +25,7 @@ interface SelectorInterface
      * Attempts to find the selectors starting from the given
      * node object.
      *
-     * @throws \Exceptions\ChildNotFoundException
+     * @throws ChildNotFoundException
      */
     public function find(AbstractNode $node): Collection;
 }

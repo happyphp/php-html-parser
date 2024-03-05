@@ -1,25 +1,25 @@
 <?php
 
-namespace Contracts\Dom;
+namespace Haphp\HtmlParser\Contracts\Dom;
 
-use Content;
-use Options;
-use Dom\Node\AbstractNode;
-use Exceptions\StrictException;
-use Exceptions\LogicalException;
-use Exceptions\CircularException;
-use Exceptions\ContentLengthException;
-use Exceptions\ChildNotFoundException;
+use Haphp\HtmlParser\Content;
+use Haphp\HtmlParser\Options;
+use Haphp\HtmlParser\Dom\Node\AbstractNode;
+use Haphp\HtmlParser\Exceptions\StrictException;
+use Haphp\HtmlParser\Exceptions\LogicalException;
+use Haphp\HtmlParser\Exceptions\CircularException;
+use Haphp\HtmlParser\Exceptions\ContentLengthException;
+use Haphp\HtmlParser\Exceptions\ChildNotFoundException;
 
 interface ParserInterface
 {
     /**
      * Attempts to parse the html in content.
      *
-     * @throws \Exceptions\ChildNotFoundException
-     * @throws \Exceptions\CircularException
-     * @throws \Exceptions\ContentLengthException
-     * @throws \Exceptions\LogicalException
+     * @throws ChildNotFoundException
+     * @throws CircularException
+     * @throws ContentLengthException
+     * @throws LogicalException
      * @throws StrictException
      */
     public function parse(Options $options, Content $content, int $size): AbstractNode;
@@ -27,7 +27,7 @@ interface ParserInterface
     /**
      * Attempts to detect the charset that the html was sent in.
      *
-     * @throws \Exceptions\ChildNotFoundException
+     * @throws ChildNotFoundException
      */
     public function detectCharset(Options $options, string $defaultCharset, AbstractNode $root): bool;
 }

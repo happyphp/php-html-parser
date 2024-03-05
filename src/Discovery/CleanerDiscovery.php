@@ -2,17 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Discovery;
+namespace Haphp\HtmlParser\Discovery;
 
-use Dom\Cleaner;
-use Contracts\Dom\CleanerInterface;
+use Haphp\HtmlParser\Dom\Cleaner;
+use Haphp\HtmlParser\Contracts\Dom\CleanerInterface;
 
 class CleanerDiscovery
 {
-    /**
-     * @var Cleaner|null
-     */
-    private static $parser = null;
+    private static ?Cleaner $parser = null;
 
     public static function find(): CleanerInterface
     {

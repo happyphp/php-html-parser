@@ -2,40 +2,43 @@
 
 declare(strict_types=1);
 
+namespace Haphp\HtmlParser;
+
+use function array_diff;
 
 class Options
 {
     /**
-     * The whitespaceTextNode, by default true, option tells the parser to save textnodes even if the content of the
+     * The whitespaceTextNode, by default, true, option tells the parser to save textnodes even if the content of the
      * node is empty (only whitespace). Setting it to false will ignore all whitespace only text node found in the document.
      *
      * @var bool
      */
-    private $whitespaceTextNode = true;
+    private bool $whitespaceTextNode = true;
 
     /**
      * Strict, by default false, will throw a StrictException if it finds that the html is not strictly compliant
-     * (all tags must have a closing tag, no attribute with out a value, etc.).
+     * (all tags must have a closing tag, no attribute without a value, etc.).
      *
      * @var bool
      */
-    private $strict = false;
+    private bool $strict = false;
 
     /**
-     * The enforceEncoding, by default null, option will enforce an character set to be used for reading the content
+     * The enforceEncoding, by default null, option will enforce a character set to be used for reading the content
      * and returning the content in that encoding. Setting it to null will trigger an attempt to figure out
      * the encoding from within the content of the string given instead.
      *
      * @var ?string
      */
-    private $enforceEncoding;
+    private ?string $enforceEncoding;
 
     /**
-     * Set this to false to skip the entire clean up phase of the parser. Defaults to true.
+     * Set this to false to skip the entire cleanup phase of the parser. Defaults to true.
      *
      * @var bool
      */
-    private $cleanupInput = true;
+    private bool $cleanupInput = true;
 
     /**
      * Set this to false to skip removing the script tags from the document body. This might have adverse effects.
@@ -45,7 +48,7 @@ class Options
      *
      * @var bool
      */
-    private $removeScripts = true;
+    private bool $removeScripts = true;
 
     /**
      * Set this to false to skip removing of style tags from the document body. This might have adverse effects. Defaults to true.
@@ -54,45 +57,46 @@ class Options
      *
      * @var bool
      */
-    private $removeStyles = true;
+    private bool $removeStyles = true;
 
     /**
      * Preserves Line Breaks if set to true. If set to false line breaks are cleaned up
-     * as part of the input clean up process. Defaults to false.
+     * as part of the input cleanup process. Defaults to false.
      *
      * NOTE: Ignored if cleanupInit is true.
      *
      * @var bool
      */
-    private $preserveLineBreaks = false;
+    private bool $preserveLineBreaks = false;
 
     /**
-     * Set this to false if you want to preserve whitespace inside of text nodes. It is set to true by default.
+     * Set this to false if you want to preserve whitespace inside text nodes. It is set to true by default.
      *
      * @var bool
      */
-    private $removeDoubleSpace = true;
+    private bool $removeDoubleSpace = true;
 
     /**
-     * Set this to false if you want to preserve smarty script found in the html content. It is set to true by default.
+     * Set this to false if you want to preserve a smarty script found in the html content. It is set to true by default.
      *
      * @var bool
      */
-    private $removeSmartyScripts = true;
+    private bool $removeSmartyScripts = true;
 
     /**
-     * By default this is set to false. Setting this to true will apply the php function htmlspecialchars_decode too all attribute values and text nodes.
+     * By default, this is set to false.
+     * Setting this to true will apply the php function htmlspecialchars_decode to all attribute values and text nodes.
      *
      * @var bool
      */
-    private $htmlSpecialCharsDecode = false;
+    private bool $htmlSpecialCharsDecode = false;
 
     /**
-     * A list of tags which will always be self closing.
+     * A list of tags which will always be self-closing.
      *
      * @var string[]
      */
-    private $selfClosing = [
+    private array $selfClosing = [
         'area',
         'base',
         'basefont',
@@ -117,7 +121,7 @@ class Options
      *
      * @var string[]
      */
-    private $noSlash = [];
+    private array $noSlash = [];
 
     public function isWhitespaceTextNode(): bool
     {
@@ -255,7 +259,7 @@ class Options
     }
 
     /**
-     * Adds the tag to the list of tags that will always be self closing.
+     * Adds the tag to the list of tags that will always be self-closing.
      */
     public function addSelfClosingTag(string $tag): Options
     {
@@ -265,7 +269,7 @@ class Options
     }
 
     /**
-     * Adds the tags to the list of tags that will always be self closing.
+     * Adds the tags to the list of tags that will always be self-closing.
      *
      * @param string[] $tags
      */
@@ -279,18 +283,18 @@ class Options
     }
 
     /**
-     * Removes the tag from the list of tags that will always be self closing.
+     * Removes the tag from the list of tags that will always be self-closing.
      */
     public function removeSelfClosingTag(string $tag): Options
     {
         $tags = [$tag];
-        $this->selfClosing = \array_diff($this->selfClosing, $tags);
+        $this->selfClosing = array_diff($this->selfClosing, $tags);
 
         return clone $this;
     }
 
     /**
-     * Sets the list of self closing tags to empty.
+     * Sets the list of self-closing tags to empty.
      */
     public function clearSelfClosingTags(): Options
     {
@@ -318,7 +322,7 @@ class Options
     }
 
     /**
-     * Adds a tag to the list of self closing tags that should not have a trailing slash.
+     * Adds a tag to the list of self-closing tags that should not have a trailing slash.
      */
     public function addNoSlashTag(string $tag): Options
     {
@@ -333,7 +337,7 @@ class Options
     public function removeNoSlashTag(string $tag): Options
     {
         $tags = [$tag];
-        $this->noSlash = \array_diff($this->noSlash, $tags);
+        $this->noSlash = array_diff($this->noSlash, $tags);
 
         return clone $this;
     }

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Contracts;
+namespace Haphp\HtmlParser\Contracts;
 
-use Dom;
-use Options;
+use Haphp\HtmlParser\Dom;
+use Haphp\HtmlParser\Options;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 

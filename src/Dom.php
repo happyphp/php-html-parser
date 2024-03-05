@@ -2,25 +2,28 @@
 
 declare(strict_types=1);
 
+namespace Haphp\HtmlParser;
 
 use GuzzleHttp\Client;
-use Dom\Node\Collection;
-use Dom\RootAccessTrait;
-use Contracts\DomInterface;
+use Haphp\HtmlParser\Dom\Node\Collection;
+use Haphp\HtmlParser\Dom\RootAccessTrait;
+use Haphp\HtmlParser\Contracts\DomInterface;
 use GuzzleHttp\Psr7\Request;
-use Discovery\CleanerDiscovery;
-use Exceptions\StrictException;
-use Exceptions\LogicalException;
-use Discovery\DomParserDiscovery;
-use Exceptions\CircularException;
-use Contracts\Dom\ParserInterface;
-use Exceptions\NotLoadedException;
-use Contracts\Dom\CleanerInterface;
+use Haphp\HtmlParser\Discovery\CleanerDiscovery;
+use Haphp\HtmlParser\Exceptions\StrictException;
+use Haphp\HtmlParser\Exceptions\LogicalException;
+use Haphp\HtmlParser\Discovery\DomParserDiscovery;
+use Haphp\HtmlParser\Exceptions\CircularException;
+use Haphp\HtmlParser\Contracts\Dom\ParserInterface;
+use Haphp\HtmlParser\Exceptions\NotLoadedException;
+use Haphp\HtmlParser\Contracts\Dom\CleanerInterface;
 use Psr\Http\Client\ClientInterface;
-use Exceptions\ChildNotFoundException;
+use Haphp\HtmlParser\Exceptions\ChildNotFoundException;
 use Psr\Http\Message\RequestInterface;
-use Exceptions\UnknownChildTypeException;
+use Haphp\HtmlParser\Exceptions\ContentLengthException;
 use Psr\Http\Client\ClientExceptionInterface;
+use function strlen;
+use function file_get_contents;
 
 /**
  * Class Dom.
@@ -34,30 +37,31 @@ class Dom implements DomInterface
      *
      * @var string
      */
-    private $defaultCharset = 'UTF-8';
+    private string $defaultCharset = 'UTF-8';
 
     /**
      * The document string.
      *
      * @var Content
      */
-    private $content;
+    private Content $content;
 
     /**
      * A global options array to be used by all load calls.
      *
      * @var ?Options
      */
-    private $globalOptions;
+    private ?Options $globalOptions;
 
     /**
      * @var ParserInterface
      */
-    private $domParser;
+    private ParserInterface $domParser;
+
     /**
-     * @var \Contracts\Dom\CleanerInterface
+     * @var CleanerInterface
      */
-    private $domCleaner;
+    private CleanerInterface $domCleaner;
 
     public function __construct(?ParserInterface $domParser = null, ?CleanerInterface $domCleaner = null)
     {
@@ -75,8 +79,6 @@ class Dom implements DomInterface
     /**
      * Returns the inner html of the root node.
      *
-     * @throws ChildNotFoundException
-     * @throws UnknownChildTypeException
      * @throws NotLoadedException
      */
     public function __toString(): string
@@ -89,15 +91,15 @@ class Dom implements DomInterface
     /**
      * Loads the dom from a document file/url.
      *
-     * @throws \Exceptions\ChildNotFoundException
-     * @throws \Exceptions\CircularException
-     * @throws \Exceptions\ContentLengthException
-     * @throws \Exceptions\LogicalException
+     * @throws ChildNotFoundException
+     * @throws CircularException
+     * @throws ContentLengthException
+     * @throws LogicalException
      * @throws StrictException
      */
     public function loadFromFile(string $file, ?Options $options = null): Dom
     {
-        $content = @\file_get_contents($file);
+        $content = @file_get_contents($file);
         if ($content === false) {
             throw new LogicalException('file_get_contents failed and returned false when trying to read "' . $file . '".');
         }
@@ -107,13 +109,13 @@ class Dom implements DomInterface
 
     /**
      * Use a curl interface implementation to attempt to load
-     * the content from a url.
+     * the content from an url.
      *
      * @throws ChildNotFoundException
      * @throws CircularException
-     * @throws \Exceptions\ContentLengthException
-     * @throws \Exceptions\LogicalException
-     * @throws \Exceptions\StrictException
+     * @throws ContentLengthException
+     * @throws LogicalException
+     * @throws StrictException
      * @throws ClientExceptionInterface
      */
     public function loadFromUrl(string $url, ?Options $options = null, ?ClientInterface $client = null, ?RequestInterface $request = null): Dom
@@ -136,10 +138,10 @@ class Dom implements DomInterface
      * and loadFromUrl().
      *
      * @throws ChildNotFoundException
-     * @throws \Exceptions\CircularException
-     * @throws \Exceptions\ContentLengthException
+     * @throws CircularException
+     * @throws ContentLengthException
      * @throws LogicalException
-     * @throws \Exceptions\StrictException
+     * @throws StrictException
      */
     public function loadStr(string $str, ?Options $options = null): Dom
     {
@@ -155,7 +157,7 @@ class Dom implements DomInterface
 
         $this->content = new Content($html);
 
-        $this->root = $this->domParser->parse($localOptions, $this->content, \strlen($str));
+        $this->root = $this->domParser->parse($localOptions, $this->content, strlen($str));
         $this->domParser->detectCharset($localOptions, $this->defaultCharset, $this->root);
 
         return $this;
@@ -179,7 +181,7 @@ class Dom implements DomInterface
      *
      * @return mixed|Collection|null
      */
-    public function find(string $selector, int $nth = null)
+    public function find(string $selector, int $nth = null): mixed
     {
         $this->isLoaded();
 
@@ -192,12 +194,12 @@ class Dom implements DomInterface
      *
      * @param $id
      *
-     * @return mixed|\Dom\Node\Collection|null
-     *@throws \Exceptions\ChildNotFoundException
+     * @return mixed|Collection|null
+     *@throws ChildNotFoundException
      *
-     * @throws \Exceptions\NotLoadedException
+     * @throws NotLoadedException
      */
-    public function getElementById($id)
+    public function getElementById($id): mixed
     {
         $this->isLoaded();
 
@@ -208,12 +210,12 @@ class Dom implements DomInterface
      * Simple wrapper function that returns all elements by
      * tag name.
      *
-     * @return mixed|\Dom\Node\Collection|null
+     * @return mixed|Collection|null
      *@throws ChildNotFoundException
      *
-     * @throws \Exceptions\NotLoadedException
+     * @throws NotLoadedException
      */
-    public function getElementsByTag(string $name)
+    public function getElementsByTag(string $name): mixed
     {
         $this->isLoaded();
 
@@ -224,12 +226,12 @@ class Dom implements DomInterface
      * Simple wrapper function that returns all elements by
      * class name.
      *
-     * @return mixed|\Dom\Node\Collection|null
+     * @return mixed|Collection|null
      *@throws ChildNotFoundException
      *
-     * @throws \Exceptions\NotLoadedException
+     * @throws NotLoadedException
      */
-    public function getElementsByClass(string $class)
+    public function getElementsByClass(string $class): mixed
     {
         $this->isLoaded();
 
@@ -243,7 +245,7 @@ class Dom implements DomInterface
      */
     private function isLoaded(): void
     {
-        if (\is_null($this->content)) {
+        if (is_null($this->content)) {
             throw new NotLoadedException('Content is not loaded!');
         }
     }

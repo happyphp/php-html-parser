@@ -2,17 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Discovery;
+namespace Haphp\HtmlParser\Discovery;
 
-use Selector\Seeker;
-use Contracts\Selector\SeekerInterface;
+use Haphp\HtmlParser\Selector\Seeker;
+use Haphp\HtmlParser\Contracts\Selector\SeekerInterface;
 
 class SeekerDiscovery
 {
-    /**
-     * @var SeekerInterface|null
-     */
-    private static $seeker = null;
+    private static ?SeekerInterface $seeker = null;
 
     public static function find(): SeekerInterface
     {

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Contracts\Selector;
+namespace Haphp\HtmlParser\Contracts\Selector;
 
-use DTO\Selector\ParsedSelectorCollectionDTO;
+use Haphp\HtmlParser\DTO\Selector\ParsedSelectorCollectionDTO;
 
 interface ParserInterface
 {

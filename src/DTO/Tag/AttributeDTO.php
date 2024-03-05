@@ -2,22 +2,24 @@
 
 declare(strict_types=1);
 
-namespace DTO\Tag;
+namespace Haphp\HtmlParser\DTO\Tag;
 
 use stringEncode\Encode;
 use stringEncode\Exception;
+use function is_null;
+use function htmlspecialchars_decode;
 
 final class AttributeDTO
 {
     /**
      * @var ?string
      */
-    private $value;
+    private mixed $value;
 
     /**
      * @var bool
      */
-    private $doubleQuote;
+    private mixed $doubleQuote;
 
     private function __construct(array $values)
     {
@@ -45,15 +47,15 @@ final class AttributeDTO
 
     public function htmlspecialcharsDecode(): void
     {
-        if (!\is_null($this->value)) {
-            $this->value = \htmlspecialchars_decode($this->value);
+        if (!is_null($this->value)) {
+            $this->value = htmlspecialchars_decode($this->value);
         }
     }
 
     /**
      * @throws Exception
      */
-    public function encodeValue(Encode $encode)
+    public function encodeValue(Encode $encode): void
     {
         $this->value = $encode->convert($this->value);
     }

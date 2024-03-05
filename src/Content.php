@@ -2,10 +2,16 @@
 
 declare(strict_types=1);
 
+namespace Haphp\HtmlParser;
 
-use Enum\StringToken;
-use Exceptions\LogicalException;
-use Exceptions\ContentLengthException;
+use Haphp\HtmlParser\Enum\StringToken;
+use Haphp\HtmlParser\Exceptions\LogicalException;
+use Haphp\HtmlParser\Exceptions\ContentLengthException;
+use function strlen;
+use function strpos;
+use function substr;
+use function strspn;
+use function strcspn;
 
 /**
  * Class Content.
@@ -17,31 +23,31 @@ class Content
      *
      * @var string
      */
-    protected $content;
+    protected string $content;
 
     /**
      * The size of the content.
      *
      * @var int
      */
-    protected $size;
+    protected int $size;
 
     /**
      * The current position we are in the content.
      *
      * @var int
      */
-    protected $pos;
+    protected int $pos;
 
     /**
-     * The following 4 strings are tags that are important to us.
+     * The following four strings are tags that are important to us.
      *
      * @var string
      */
-    protected $blank = " \t\r\n";
-    protected $equal = ' =/>';
-    protected $slash = " />\r\n\t";
-    protected $attr = ' >';
+    protected string $blank = " \t\r\n";
+    protected string $equal = ' =/>';
+    protected string $slash = " />\r\n\t";
+    protected string $attr = ' >';
 
     /**
      * Content constructor.
@@ -49,7 +55,7 @@ class Content
     public function __construct(string $content = '')
     {
         $this->content = $content;
-        $this->size = \strlen($content);
+        $this->size = strlen($content);
         $this->pos = 0;
     }
 
@@ -61,11 +67,6 @@ class Content
         return $this->pos;
     }
 
-    /**
-     * Gets the current character we are at.
-     *
-     * @param ?int $char
-     */
     public function char(?int $char = null): string
     {
         return $this->content[$char ?? $this->pos] ?? '';
@@ -90,7 +91,7 @@ class Content
     /**
      * Moves the current position forward.
      *
-     * @throws \Exceptions\ContentLengthException
+     * @throws ContentLengthException
      */
     public function fastForward(int $count): Content
     {
@@ -108,7 +109,7 @@ class Content
      */
     public function canFastForward(int $count): bool
     {
-        return \strlen($this->content) >= $this->pos + $count;
+        return strlen($this->content) >= $this->pos + $count;
     }
 
     /**
@@ -126,6 +127,7 @@ class Content
 
     /**
      * Copy the content until we find the given string.
+     * @throws LogicalException
      */
     public function copyUntil(string $string, bool $char = false, bool $escape = false): string
     {
@@ -138,7 +140,7 @@ class Content
             $position = $this->pos;
             $found = false;
             while (!$found) {
-                $position = \strpos($this->content, $string, $position);
+                $position = strpos($this->content, $string, $position);
                 if ($position === false) {
                     // reached the end
                     break;
@@ -153,16 +155,16 @@ class Content
                 $found = true;
             }
         } elseif ($char) {
-            $position = \strcspn($this->content, $string, $this->pos);
+            $position = strcspn($this->content, $string, $this->pos);
             $position += $this->pos;
         } else {
-            $position = \strpos($this->content, $string, $this->pos);
+            $position = strpos($this->content, $string, $this->pos);
         }
 
         if ($position === false) {
-            // could not find character, just return the remaining of the content
-            $return = \substr($this->content, $this->pos, $this->size - $this->pos);
-            if ($return === false) {
+            // could not find character, return the remaining of the content
+            $return = substr($this->content, $this->pos, $this->size - $this->pos);
+            if ($return === '') {
                 throw new LogicalException('Substr returned false with position ' . $this->pos . '.');
             }
             $this->pos = $this->size;
@@ -175,8 +177,8 @@ class Content
             return '';
         }
 
-        $return = \substr($this->content, $this->pos, $position - $this->pos);
-        if ($return === false) {
+        $return = substr($this->content, $this->pos, $position - $this->pos);
+        if ($return === '') {
             throw new LogicalException('Substr returned false with position ' . $this->pos . '.');
         }
         // set the new position
@@ -188,6 +190,7 @@ class Content
     /**
      * Copies the content until the string is found and return it
      * unless the 'unless' is found in the substring.
+     * @throws ContentLengthException|LogicalException
      */
     public function copyUntilUnless(string $string, string $unless): string
     {
@@ -195,8 +198,8 @@ class Content
         $this->fastForward(1);
         $foundString = $this->copyUntil($string, true, true);
 
-        $position = \strcspn($foundString, $unless);
-        if ($position == \strlen($foundString)) {
+        $position = strcspn($foundString, $unless);
+        if ($position == strlen($foundString)) {
             return $string . $foundString;
         }
         // rewind changes and return nothing
@@ -206,8 +209,9 @@ class Content
     }
 
     /**
-     * Copies the content until it reaches the token string.,.
+     * Copies the content until it reaches the token string.
      *
+     * @throws LogicalException
      * @uses $this->copyUntil()
      */
     public function copyByToken(StringToken $stringToken, bool $char = false, bool $escape = false): string
@@ -220,20 +224,13 @@ class Content
     /**
      * Skip a given set of characters.
      *
-     * @throws \Exceptions\LogicalException
      */
     public function skip(string $string, bool $copy = false): string
     {
-        $len = \strspn($this->content, $string, $this->pos);
-        if ($len === false) {
-            throw new LogicalException('Strspn returned false with position ' . $this->pos . '.');
-        }
+        $len = strspn($this->content, $string, $this->pos);
         $return = '';
         if ($copy) {
-            $return = \substr($this->content, $this->pos, $len);
-            if ($return === false) {
-                throw new LogicalException('Substr returned false with position ' . $this->pos . '.');
-            }
+            $return = substr($this->content, $this->pos, $len);
         }
 
         // update the position

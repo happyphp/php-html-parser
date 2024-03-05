@@ -2,17 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Discovery;
+namespace Haphp\HtmlParser\Discovery;
 
-use Selector\Parser;
-use Contracts\Selector\ParserInterface;
+use Haphp\HtmlParser\Selector\Parser;
+use Haphp\HtmlParser\Contracts\Selector\ParserInterface;
 
 class SelectorParserDiscovery
 {
-    /**
-     * @var \Contracts\Selector\ParserInterface|null
-     */
-    private static $parser = null;
+    private static ?ParserInterface $parser = null;
 
     public static function find(): ParserInterface
     {

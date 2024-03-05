@@ -2,18 +2,16 @@
 
 declare(strict_types=1);
 
+namespace Haphp\HtmlParser;
 
-use Dom\Node\InnerNode;
-use Dom\Node\AbstractNode;
-use Exceptions\ChildNotFoundException;
-use Exceptions\ParentNotFoundException;
+use Haphp\HtmlParser\Dom\Node\InnerNode;
+use Haphp\HtmlParser\Dom\Node\AbstractNode;
+use Haphp\HtmlParser\Exceptions\ChildNotFoundException;
+use Haphp\HtmlParser\Exceptions\ParentNotFoundException;
 
 class Finder
 {
-    /**
-     * @var int
-     */
-    private $id;
+    private int $id;
 
     /**
      * Finder constructor.
@@ -26,14 +24,14 @@ class Finder
     }
 
     /**
-     * Find node in tree by id.
+     * Find node in a tree by id.
      *
+     * @param  AbstractNode  $node
+     * @return bool|AbstractNode
      * @throws ChildNotFoundException
      * @throws ParentNotFoundException
-     *
-     * @return bool|AbstractNode
      */
-    public function find(AbstractNode $node)
+    public function find(AbstractNode $node): AbstractNode|bool
     {
         if (!$node->id() && $node instanceof InnerNode) {
             return $this->find($node->firstChild());

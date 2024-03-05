@@ -2,32 +2,31 @@
 
 declare(strict_types=1);
 
-namespace Dom;
+namespace Haphp\HtmlParser\Dom;
 
-use Dom\Node\HtmlNode;
-use Dom\Node\AbstractNode;
-use Exceptions\NotLoadedException;
-use Exceptions\ChildNotFoundException;
+use Haphp\HtmlParser\Dom\Node\AbstractNode;
+use Haphp\HtmlParser\Exceptions\LogicalException;
+use Haphp\HtmlParser\Exceptions\CircularException;
+use Haphp\HtmlParser\Exceptions\NotLoadedException;
+use Haphp\HtmlParser\Exceptions\ChildNotFoundException;
 
 trait RootAccessTrait
 {
     /**
      * Contains the root node of this dom tree.
-     *
-     * @var \Dom\Node\HtmlNode
      */
-    public $root;
+    public AbstractNode $root;
 
     /**
      * A simple wrapper around the root node.
      *
-     * @param string $name
+     * @param  string  $name
      *
      * @return mixed
-     * @throws \Exceptions\NotLoadedException
      *
+     * @throws NotLoadedException
      */
-    public function __get($name)
+    public function __get(string $name)
     {
         $this->isLoaded();
 
@@ -37,8 +36,7 @@ trait RootAccessTrait
     /**
      * Simple wrapper function that returns the first child.
      *
-     * @throws \Exceptions\ChildNotFoundException
-     * @throws \Exceptions\NotLoadedException
+     * @throws ChildNotFoundException|NotLoadedException
      */
     public function firstChild(): AbstractNode
     {
@@ -50,8 +48,8 @@ trait RootAccessTrait
     /**
      * Simple wrapper function that returns the last child.
      *
-     * @throws \Exceptions\ChildNotFoundException
-     * @throws \Exceptions\NotLoadedException
+     * @throws ChildNotFoundException
+     * @throws LogicalException|NotLoadedException
      */
     public function lastChild(): AbstractNode
     {
@@ -63,7 +61,7 @@ trait RootAccessTrait
     /**
      * Simple wrapper function that returns count of child elements.
      *
-     * @throws \Exceptions\NotLoadedException
+     * @throws NotLoadedException
      */
     public function countChildren(): int
     {
@@ -73,9 +71,9 @@ trait RootAccessTrait
     }
 
     /**
-     * Get array of children.
+     * Get an array of children.
      *
-     * @throws \Exceptions\NotLoadedException
+     * @throws CircularException|NotLoadedException
      */
     public function getChildren(): array
     {
@@ -85,7 +83,7 @@ trait RootAccessTrait
     }
 
     /**
-     * Check if node have children nodes.
+     * Check if node has children nodes.
      *
      * @throws NotLoadedException
      */

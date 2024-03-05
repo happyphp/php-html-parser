@@ -2,10 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Dom\Node;
+namespace Haphp\HtmlParser\Dom\Node;
 
-use Dom\Tag;
-use Exceptions\LogicalException;
+use Haphp\HtmlParser\Dom\Tag;
+use Haphp\HtmlParser\Exceptions\LogicalException;
+use function is_null;
+use function str_replace;
+use function mb_ereg_replace;
+use function htmlspecialchars_decode;
 
 /**
  * Class TextNode.
@@ -38,18 +42,20 @@ class TextNode extends LeafNode
      *
      * @var ?string
      */
-    protected $convertedText;
+    protected ?string $convertedText;
 
     /**
      * Sets the text for this node.
      *
-     * @param bool $removeDoubleSpace
+     * @param  string  $text
+     * @param  bool  $removeDoubleSpace
+     * @throws LogicalException
      */
-    public function __construct(string $text, $removeDoubleSpace = true)
+    public function __construct(string $text, bool $removeDoubleSpace = true)
     {
         if ($removeDoubleSpace) {
             // remove double spaces
-            $replacedText = \mb_ereg_replace('\s+', ' ', $text);
+            $replacedText = mb_ereg_replace('\s+', ' ', $text);
             if ($replacedText === false) {
                 throw new LogicalException('mb_ereg_replace returns false when attempting to clean white space from "' . $text . '".');
             }
@@ -57,7 +63,7 @@ class TextNode extends LeafNode
         }
 
         // restore line breaks
-        $text = \str_replace('&#10;', "\n", $text);
+        $text = str_replace('&#10;', "\n", $text);
 
         $this->text = $text;
         $this->tag = new Tag('text');
@@ -65,9 +71,9 @@ class TextNode extends LeafNode
     }
 
     /**
-     * @param bool $htmlSpecialCharsDecode
+     * @param  bool  $htmlSpecialCharsDecode
      */
-    public function setHtmlSpecialCharsDecode($htmlSpecialCharsDecode = false): void
+    public function setHtmlSpecialCharsDecode(bool $htmlSpecialCharsDecode = false): void
     {
         parent::setHtmlSpecialCharsDecode($htmlSpecialCharsDecode);
         $this->tag->setHtmlSpecialCharsDecode($htmlSpecialCharsDecode);
@@ -79,13 +85,13 @@ class TextNode extends LeafNode
     public function text(): string
     {
         if ($this->htmlSpecialCharsDecode) {
-            $text = \htmlspecialchars_decode($this->text);
+            $text = htmlspecialchars_decode($this->text);
         } else {
             $text = $this->text;
         }
         // convert charset
-        if (!\is_null($this->encode)) {
-            if (!\is_null($this->convertedText)) {
+        if (!is_null($this->encode)) {
+            if (!is_null($this->convertedText)) {
                 // we already know the converted value
                 return $this->convertedText;
             }
@@ -103,12 +109,13 @@ class TextNode extends LeafNode
     /**
      * Sets the text for this node.
      *
-     * @var string
+     * @param  string  $text
+     * @return void
      */
     public function setText(string $text): void
     {
         $this->text = $text;
-        if (!\is_null($this->encode)) {
+        if (!is_null($this->encode)) {
             $text = $this->encode->convert($text);
 
             // remember the conversion
@@ -117,7 +124,7 @@ class TextNode extends LeafNode
     }
 
     /**
-     * This node has no html, just return the text.
+     * This node has no html, return the text.
      *
      * @uses $this->text()
      */
@@ -127,7 +134,7 @@ class TextNode extends LeafNode
     }
 
     /**
-     * This node has no html, just return the text.
+     * This node has no html, return the text.
      *
      * @uses $this->text()
      */

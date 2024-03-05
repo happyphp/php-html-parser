@@ -1,16 +1,16 @@
 <?php
 
-namespace Contracts\Dom;
+namespace Haphp\HtmlParser\Contracts\Dom;
 
-use Options;
-use Exceptions\LogicalException;
+use Haphp\HtmlParser\Options;
+use Haphp\HtmlParser\Exceptions\LogicalException;
 
 interface CleanerInterface
 {
     /**
      * Cleans the html of any none-html information.
      *
-     * @throws \Exceptions\LogicalException
+     * @throws LogicalException
      */
     public function clean(string $str, Options $options, string $defaultCharset): string;
 }

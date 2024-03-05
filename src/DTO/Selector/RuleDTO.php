@@ -2,39 +2,39 @@
 
 declare(strict_types=1);
 
-namespace DTO\Selector;
+namespace Haphp\HtmlParser\DTO\Selector;
 
 final class RuleDTO
 {
     /**
      * @var string
      */
-    private $tag;
+    private mixed $tag;
 
     /**
      * @var string
      */
-    private $operator;
+    private mixed $operator;
 
     /**
      * @var string|array|null
      */
-    private $key;
+    private mixed $key;
 
     /**
      * @var string|array|null
      */
-    private $value;
+    private mixed $value;
 
     /**
      * @var bool
      */
-    private $noKey;
+    private mixed $noKey;
 
     /**
      * @var bool
      */
-    private $alterNext;
+    private mixed $alterNext;
 
     private function __construct(array $values)
     {
@@ -47,10 +47,15 @@ final class RuleDTO
     }
 
     /**
-     * @param string|array|null $key
-     * @param string|array|null $value
+     * @param  string  $tag
+     * @param  string  $operator
+     * @param  array|string|null  $key
+     * @param  array|string|null  $value
+     * @param  bool  $noKey
+     * @param  bool  $alterNext
+     * @return RuleDTO
      */
-    public static function makeFromPrimitives(string $tag, string $operator, $key, $value, bool $noKey, bool $alterNext): RuleDTO
+    public static function makeFromPrimitives(string $tag, string $operator, array|string|null $key, array|string|null $value, bool $noKey, bool $alterNext): RuleDTO
     {
         return new RuleDTO([
             'tag'       => $tag,
@@ -75,7 +80,7 @@ final class RuleDTO
     /**
      * @return string|array|null
      */
-    public function getKey()
+    public function getKey(): array|string|null
     {
         return $this->key;
     }
@@ -83,7 +88,7 @@ final class RuleDTO
     /**
      * @return string|array|null
      */
-    public function getValue()
+    public function getValue(): array|string|null
     {
         return $this->value;
     }

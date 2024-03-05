@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Enum;
+namespace Haphp\HtmlParser\Enum;
 
 use MyCLabs\Enum\Enum;
 
