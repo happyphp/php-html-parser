@@ -60,7 +60,7 @@ class Tag
      *
      * @var Encode|null
      */
-    protected ?Encode $encode;
+    protected ?Encode $encode = null;
 
     /**
      * @var bool

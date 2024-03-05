@@ -31,7 +31,7 @@ class Options
      *
      * @var ?string
      */
-    private ?string $enforceEncoding;
+    private ?string $enforceEncoding = null;
 
     /**
      * Set this to false to skip the entire cleanup phase of the parser. Defaults to true.

@@ -61,7 +61,7 @@ class HtmlNode extends InnerNode
      */
     protected ?string $textWithChildren;
 
-    protected Tag $tag;
+    protected ?Tag $tag;
 
     /**
      * Sets up the tag of this node.

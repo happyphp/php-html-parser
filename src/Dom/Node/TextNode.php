@@ -23,26 +23,21 @@ use function htmlspecialchars_decode;
  */
 class TextNode extends LeafNode
 {
-    /**
-     * This is a text node.
-     *
-     * @var Tag
-     */
-    protected $tag;
+    protected ?Tag $tag = null;
 
     /**
      * This is the text in this node.
      *
      * @var string
      */
-    protected $text;
+    protected string $text;
 
     /**
      * This is the converted version of the text.
      *
      * @var ?string
      */
-    protected ?string $convertedText;
+    protected ?string $convertedText = null;
 
     /**
      * Sets the text for this node.

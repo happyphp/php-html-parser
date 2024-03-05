@@ -51,7 +51,7 @@ abstract class AbstractNode
      *
      * @var ?InnerNode
      */
-    protected ?InnerNode $parent;
+    protected ?InnerNode $parent = null;
 
     /**
      * The unique id of the class. Given by PHP.
