@@ -51,7 +51,7 @@ class Dom implements DomInterface
      *
      * @var ?Options
      */
-    private ?Options $globalOptions;
+    private ?Options $globalOptions = null;
 
     /**
      * @var ParserInterface
